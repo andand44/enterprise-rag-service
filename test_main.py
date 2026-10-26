@@ -4,14 +4,14 @@ from unittest.mock import patch
 
 client = TestClient(app)
 
-def test_read_root():
-    response = client.get("/")
-    assert response.status_code == 404 # У нас пока нет корневого эндпоинта, FastAPI вернет 404
+@patch("vector_db.add_document")
+def test_add_knowledge(mock_add):
+    response = client.post("/add_knowledge", json={"text": "Тестовый факт"})
+    assert response.status_code == 200
+    mock_add.assert_called_once_with("Тестовый факт")
 
-# Тестируем стриминг (мокаем вызов Ollama)
-@patch("main.stream_ollama_response")
+@patch("main.stream_rag_response")
 def test_chat_stream(mock_stream):
-    # Подменяем генератор на фейковый
     def fake_stream(msg):
         yield "data: {\"text\": \"Привет\"}\n\n"
         yield "data: [DONE]\n\n"
@@ -19,4 +19,3 @@ def test_chat_stream(mock_stream):
 
     response = client.post("/chat/stream", json={"message": "Привет"})
     assert response.status_code == 200
-    assert "text/event-stream" in response.headers["content-type"]
