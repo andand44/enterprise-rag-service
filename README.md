@@ -54,7 +54,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-API и Swagger-документация будут доступны по адресу: `bashhttp://127.0.0.1:8000/docs`
+API и Swagger-документация будут доступны по адресу: `http://127.0.0.1:8000/docs`
 
 ## 🧪 Тестирование
 
