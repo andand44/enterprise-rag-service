@@ -46,10 +46,13 @@ async def stream_rag_response(user_message: str):
                 name="rag_retrieval"
             ) as retrieval_span:
                 context = vector_db.search_docs(user_message)
+                print(f"\n--- ДЕБАГ: Найдено в Qdrant ---\n{context}\n-----------------------------\n")
                 retrieval_span.update(output=context)
             
             system_prompt = (
-                "Ты корпоративный ассистент. Используй контекст ниже для ответа.\n"
+                "Ты полезный ассистент. Твоя задача отвечать на вопросы клиентов, используя ТОЛЬКО предоставленный контекст.\n"
+                "Если в контексте есть информация о скидке, ты ОБЯЗАН рассказать о ней.\n"
+                "Не используй фразы вроде 'я не могу предоставить скидку'. Ты просто сообщаешь информацию из базы.\n"
                 f"КОНТЕКСТ:\n{context}"
             )
             
@@ -57,18 +60,19 @@ async def stream_rag_response(user_message: str):
             with langfuse.start_as_current_observation(
                 as_type="generation",
                 name="ollama_generation",
-                model="qwen3.5:2b",
+                model="qwen2.5:1.5b",
                 input=user_message,
                 metadata={"context": context}
             ) as generation:
                 
                 client = ollama.AsyncClient(host='http://localhost:11434')
                 stream = await client.chat(
-                    model='qwen3.5:2b',
+                    model='qwen2.5:1.5b',
                     messages=[
                         {'role': 'system', 'content': system_prompt},
                         {'role': 'user', 'content': user_message}
                     ],
+                    options={'num_ctx': 2048},
                     stream=True
                 )
                 

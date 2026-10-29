@@ -7,9 +7,6 @@ from langchain_classic.retrievers import ContextualCompressionRetriever
 from langchain_community.document_compressors import FlashrankRerank
 import os
 
-# Импорт Ranker оставляем, это решает проблему Pydantic
-from flashrank import Ranker
-
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 
@@ -32,11 +29,12 @@ def add_document(text: str):
     doc = Document(page_content=text)
     store.add_documents([doc])
 
-def search_docs(query: str, k: int = 2) -> str:
+def search_docs(query: str, k: int = 3) -> str:
     store = get_vector_store()
-    base_retriever = store.as_retriever(search_kwargs={"k": 5})
+    # 1. Ищем 6 документов на всякий случай
+    base_retriever = store.as_retriever(search_kwargs={"k": 6})
     
-    # ✅ Передаем строку, а не объект Ranker!
+    # 2. Оставляем 3 самых лучших 
     compressor = FlashrankRerank(model="ms-marco-MiniLM-L-12-v2", top_n=k)
     
     compression_retriever = ContextualCompressionRetriever(

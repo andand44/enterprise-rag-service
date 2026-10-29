@@ -2,7 +2,7 @@ import requests
 import json
 
 url = "http://localhost:8000/chat/stream"
-payload = {"message": "Где находится офис и во сколько он открывается?"}
+payload = {"message": "Какая у вас скидка?"}
 
 print("Ответ модели:\n")
 
